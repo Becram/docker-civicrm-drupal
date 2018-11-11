@@ -1,0 +1,50 @@
+version: '2'
+
+services:
+  app:
+    build: app
+    depends_on:
+      - db
+    env_file:
+      - env/app.env
+      - env/db.env
+      - env/web.env
+    volumes:
+      - app-data:/var/www
+    volumes_from:
+      - db
+    networks:
+      - net-drupal
+  db:
+    image: mariadb:10.3.10-bionic
+    env_file:
+      - env/db.env
+    restart: always
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - net-drupal
+
+  web:
+    build: web
+    env_file:
+      - env/web.env
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: always
+    volumes_from:
+      - app
+    networks:
+      - net-drupal
+
+volumes:
+  app-data:
+    driver: local
+  db-data:
+    driver: local
+
+networks:
+  net-drupal:
+    driver: bridge
+
